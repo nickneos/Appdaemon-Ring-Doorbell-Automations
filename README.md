@@ -1,10 +1,15 @@
 # Ring Doorbell Automations App
+[![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/custom-components/hacs) [![homeassistant_community](https://img.shields.io/badge/HA%20community-forum-brightgreen)](https://community.home-assistant.io/) 
+
 Trigger automations when a Ring Doorbell button is pressed:
 
 * Play alert sound on media device (eg. google home)
 * Courtesy light (eg. turn of front porch light when doorbell pressed)
 * Flash lights in the house
 * TTS voice prompt (eg. google home)
+
+## Installing
+Install via [HACS](https://hacs.xyz/). Alternatively, place the apps folder and its contents in your appdaemon folder.
 
 ## Configuration
 
@@ -63,3 +68,8 @@ ring_automations:
 | ------------ | ------ | -------- | ----------------------------------------------------- |
 | media_player | string | Required | `entity_id` of media player                           |
 | timer        | int    | Required | TTS message. Default: `"There's someone at the door"` |
+
+
+<hr/>
+
+<a href="https://www.buymeacoffee.com/so3n" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: auto !important;width: auto !important;" ></a>
