@@ -19,7 +19,7 @@ class Doorbell(hass.Hass):
 
     def initialize(self):
         """Initialize AppDaemon App."""
-        self.button = self.args.get("button")
+        self.doorbell = self.args.get("doorbell")
         self.motion = self.args.get("motion")
         self.alert_sound = self.args.get("alert_sound")
         self.flash = self.args.get("flash_lights")
@@ -27,7 +27,7 @@ class Doorbell(hass.Hass):
         self.tts = self.args.get("tts")
 
         # listener for when ring doorbell is pressed
-        self.listen_state(self.cb_doorbell, self.button, new = "on")
+        self.listen_state(self.cb_doorbell, self.doorbell, new = "on")
 
          # listener for when ring doorbell detects motion
         self.listen_state(self.cb_motion, self.motion, new = "on")
@@ -36,11 +36,11 @@ class Doorbell(hass.Hass):
     def cb_doorbell(self, entity, attribute, old, new, kwargs):
         """Callback function when doorbell button is pressed"""
 
-        self.log(f"Ring Doorbell {self.button} pressed") 
+        self.log(f"Ring Doorbell {self.doorbell} pressed") 
 
         # Turn on courtesy light if enabled and after sunset
         if self.courtesy_light and self.sun_down():
-            light = self.courtesy_light.get("entity_id")
+            light = self.courtesy_light.get("light")
             timer = self.courtesy_light.get("timer", DEFAULT_COURTESY_LIGHT_TIMER)
 
             self.turn_on(light)
@@ -52,14 +52,14 @@ class Doorbell(hass.Hass):
             )
 
         # Play alert if someone is home
-        if self.anyone_home(person=True) and self.alert_sound:
+        if self.alert_sound and self.anyone_home(person=True):
             media_player = self.alert_sound.get("media_player")
             media_content = self.alert_sound.get("media_content", DEFAULT_MEDIA_CONTENT)
             
             self.call_service(
-                "media/play_media", 
-                media_player = media_player,
-                media_content = media_content,
+                "media_player/play_media", 
+                entity_id = media_player,
+                media_content_id = media_content,
                 media_content_type = "music"
             )
 
@@ -75,7 +75,7 @@ class Doorbell(hass.Hass):
 
         # Google Home voice prompt if enabled
         if self.tts and self.anyone_home(person=True):
-            gh = self.tts.get("entity")
+            gh = self.tts.get("media_player")
             message = self.tts.get("message")
 
             if self.get_state(gh) == "off": 
@@ -104,7 +104,7 @@ class Doorbell(hass.Hass):
             self.call_service(service, entity_id = entity)
         except AttributeError:
             pass
-        
+
 
     def flash_lights(self, lights):
         """Flash the light specified"""
@@ -115,7 +115,6 @@ class Doorbell(hass.Hass):
             state = self.get_state(light)
             
             for x in rng:
-                self.log(x)
                 self.run_in(self.cb_delayed_service, x, entity_id = light, service = "light.toggle")
 
             if state == "on":
