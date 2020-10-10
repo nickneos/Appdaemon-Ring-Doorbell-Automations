@@ -13,7 +13,6 @@ import time
 # default values
 DEFAULT_MEDIA_CONTENT = "https://www.myinstants.com/media/sounds/dj-airhorn-sound-effect-kingbeatz_1.mp3"
 DEFAULT_COURTESY_LIGHT_TIMER = 60
-DEFUALT_DOORBELL_VOLUME = 10
 DEFAULT_TTS = "There's someone at the door"
 
 class Doorbell(hass.Hass):
@@ -22,12 +21,10 @@ class Doorbell(hass.Hass):
         """Initialize AppDaemon App."""
         self.button = self.args.get("button")
         self.motion = self.args.get("motion")
-        self.media_player = self.args.get("media_player")
-        self.media_content = self.args.get("media_content", DEFAULT_MEDIA_CONTENT)
-        self.flash = self.args.get("flash")
+        self.alert_sound = self.args.get("alert_sound")
+        self.flash = self.args.get("flash_lights")
         self.courtesy_light = self.args.get("courtesy_light")
-        self.tts_device = self.args.get("tts_device")
-        self.tts = self.args.get("tts", DEFAULT_TTS)
+        self.tts = self.args.get("tts")
 
         # listener for when ring doorbell is pressed
         self.listen_state(self.cb_doorbell, self.button, new = "on")
@@ -55,18 +52,17 @@ class Doorbell(hass.Hass):
             )
 
         # Play alert if someone is home
-        if self.anyone_home(person=True) and self.media_player:
-            if self.volume_slider:
-                vol = float(self.get_state(self.volume_slider))
-            else:
-                vol = self.volume
+        if self.anyone_home(person=True) and self.alert_sound:
+            media_player = self.alert_sound.get("media_player")
+            media_content = self.alert_sound.get("media_content", DEFAULT_MEDIA_CONTENT)
+            
+            self.call_service(
+                "media/play_media", 
+                media_player = media_player,
+                media_content = media_content,
+                media_content_type = "music"
+            )
 
-            if vol > 0:
-                self.call_service("xiaomi_aqara/play_ringtone", 
-                                media_player = self.media_player,
-                                media_content = self.media_content,
-                                ringtone_vol = vol)
-        
         # Flash lights if enabled
         if self.flash:
             if type(self.flash) is list:
@@ -78,16 +74,16 @@ class Doorbell(hass.Hass):
                
 
         # Google Home voice prompt if enabled
-        if self.tts_device and self.anyone_home(person=True):
-            if type(self.tts_device) is list:
-                ggl_homes = self.tts_device
-            else:
-                ggl_homes = [self.tts_device]
+        if self.tts and self.anyone_home(person=True):
+            gh = self.tts.get("entity")
+            message = self.tts.get("message")
 
-            for gh in ggl_homes:
-                if self.get_state(gh) == "off": 
-                    self.call_service("tts/google_say", entity_id = gh,
-                                      message = self.tts)
+            if self.get_state(gh) == "off": 
+                self.call_service(
+                    "tts/google_translate_say",
+                    entity_id = gh,
+                    message = message
+                )
                                       
 
     def cb_motion(self, entity, attribute, old, new, kwargs):
@@ -108,6 +104,7 @@ class Doorbell(hass.Hass):
             self.call_service(service, entity_id = entity)
         except AttributeError:
             pass
+        
 
     def flash_lights(self, lights):
         """Flash the light specified"""
