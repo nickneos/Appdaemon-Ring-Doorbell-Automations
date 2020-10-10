@@ -57,9 +57,9 @@ class Doorbell(hass.Hass):
             media_content = self.alert_sound.get("media_content", DEFAULT_MEDIA_CONTENT)
             
             self.call_service(
-                "media/play_media", 
-                media_player = media_player,
-                media_content = media_content,
+                "media_player/play_media", 
+                entity_id = media_player,
+                media_content_id = media_content,
                 media_content_type = "music"
             )
 
@@ -115,7 +115,6 @@ class Doorbell(hass.Hass):
             state = self.get_state(light)
             
             for x in rng:
-                self.log(x)
                 self.run_in(self.cb_delayed_service, x, entity_id = light, service = "light.toggle")
 
             if state == "on":

@@ -12,24 +12,22 @@ Trigger automations when a Ring Doorbell button is pressed:
 
 ```yaml
 ring_automations:
-  module: ring_doorbell
+  module: ring_automations
   class: Doorbell
   doorbell: binary_sensor.front_door_ding
   courtesy_light: 
     light: light.front_porch
     timer: 180
   alert_sound:
-    media_player: media_player.play_room
+    media_player: media_player.google_home_main
     media_content: "https://www.myinstants.com/media/sounds/dj-airhorn-sound-effect-kingbeatz_1.mp3"
   flash_lights:
-    - light.study
-    - light.play_room
+    - light.hallway
     - light.kitchen
-    - light.dining
     - light.living_room
   tts:
-    media_player: media_player.play_room
-    message: "There is someone at the door."
+    media_player: media_player.google_home_main
+    message: "There's someone at the door."
 ```
 
 
